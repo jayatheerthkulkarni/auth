@@ -12,6 +12,7 @@ Describe "Time Zone Invariance (UTC Expiry)" {
 
 		foreach ($tz in $testZones) {
 			It "verifies OTP generation and verification remain valid under TZ=$tz" {
+				[void](Stop-HarnessServer)
 				$prevTZ = $env:AUTH_TEST_TZ
 				$env:AUTH_TEST_TZ = $tz
 
@@ -40,11 +41,13 @@ Describe "Time Zone Invariance (UTC Expiry)" {
 					Assert-Equal $verifyRes.data.status "verified"
 				} finally {
 					$smtp.Stop()
+					[void](Stop-HarnessServer)
 					$env:AUTH_TEST_TZ = $prevTZ
 				}
 			}
 
 			It "verifies refresh token lifecycle remains valid under TZ=$tz" {
+				[void](Stop-HarnessServer)
 				$prevTZ = $env:AUTH_TEST_TZ
 				$env:AUTH_TEST_TZ = $tz
 
@@ -59,6 +62,7 @@ Describe "Time Zone Invariance (UTC Expiry)" {
 					$valRes = Invoke-Harness "/api/validate-refresh-token" @{ token = $token }
 					Assert-Equal $valRes.data.user_id $user
 				} finally {
+					[void](Stop-HarnessServer)
 					$env:AUTH_TEST_TZ = $prevTZ
 				}
 			}

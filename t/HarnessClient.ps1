@@ -15,7 +15,10 @@ function Get-HarnessBinary {
 			[void](New-Item -ItemType Directory -Path $binDir -Force)
 		}
 		$harnessSrc = Join-Path $scriptDir "harness"
-		& go build -o $harnessBin "$harnessSrc/main.go" "$harnessSrc/mock_storage.go"
+		$buildOutput = & go build -o $harnessBin $harnessSrc 2>&1
+		if ($LASTEXITCODE -ne 0) {
+			throw "Failed to build Go test harness: $buildOutput"
+		}
 	}
 	return $harnessBin
 }
@@ -73,7 +76,7 @@ function Stop-HarnessServer {
 		try {
 			if (-not $global:HarnessProcess.HasExited) {
 				$global:HarnessProcess.Kill()
-				$global:HarnessProcess.WaitForExit(1000)
+				[void]$global:HarnessProcess.WaitForExit(1000)
 			}
 			$global:HarnessProcess.Dispose()
 		} catch {}

@@ -53,30 +53,30 @@ Describe "PostgreSQL Storage Initialization and Schema" {
 	}
 
 	Context "Live Database CheckTables (Integration)" {
-		$dbHost = if ($env:TEST_DB_HOST) { $env:TEST_DB_HOST } else { "127.0.0.1" }
-		$dbPort = if ($env:TEST_DB_PORT) { [int]$env:TEST_DB_PORT } else { 5432 }
-		$dbUser = if ($env:TEST_DB_USER) { $env:TEST_DB_USER } else { "testuser" }
-		$dbPass = if ($env:TEST_DB_PASS) { $env:TEST_DB_PASS } else { "testpass" }
-		$dbName = if ($env:TEST_DB_NAME) { $env:TEST_DB_NAME } else { "testauth" }
-
 		It "initializes schema tables when live PostgreSQL is available" {
 			if ($env:AUTH_SHORT_TESTS -eq "1") {
 				Skip "Live PostgreSQL integration" "Short mode active"
 				return
 			}
 
-			try {
-				$res = Invoke-Harness "/api/postgres/check-tables" @{
-					port = $dbPort
-					user = $dbUser
-					pass = $dbPass
-					name = $dbName
-					host = $dbHost
-				}
-				Assert-Equal $res.data.status "ok"
-			} catch {
-				Skip "Live PostgreSQL integration" "PostgreSQL service not reachable ($($_.Exception.Message))"
+			if (-not $env:TEST_DB_HOST) {
+				Skip "Live PostgreSQL integration" "TEST_DB_HOST not set (run with TEST_DB_* to test against live Postgres)"
+				return
 			}
+
+			$dbPort = if ($env:TEST_DB_PORT) { [int]$env:TEST_DB_PORT } else { 5432 }
+			$dbUser = if ($env:TEST_DB_USER) { $env:TEST_DB_USER } else { "testuser" }
+			$dbPass = if ($env:TEST_DB_PASS) { $env:TEST_DB_PASS } else { "testpass" }
+			$dbName = if ($env:TEST_DB_NAME) { $env:TEST_DB_NAME } else { "testauth" }
+
+			$res = Invoke-Harness "/api/postgres/check-tables" @{
+				port = $dbPort
+				user = $dbUser
+				pass = $dbPass
+				name = $dbName
+				host = $env:TEST_DB_HOST
+			}
+			Assert-Equal $res.data.status "ok"
 		}
 	}
 }

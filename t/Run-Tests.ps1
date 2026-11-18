@@ -13,6 +13,7 @@ $ErrorActionPreference = "Stop"
 
 $scriptDir = $PSScriptRoot
 . "$scriptDir/TestFramework.ps1"
+. "$scriptDir/HarnessClient.ps1"
 
 Write-Host "==========================================================" -ForegroundColor Magenta
 Write-Host "     Auth Library Modular PowerShell 7 Test Suite         " -ForegroundColor Magenta
@@ -39,7 +40,7 @@ if (Test-Path $harnessSrc) {
 	if (-not (Test-Path $binDir)) {
 		[void](New-Item -ItemType Directory -Path $binDir -Force)
 	}
-	$buildOutput = & go build -o $harnessBin "$harnessSrc/main.go" "$harnessSrc/mock_storage.go" 2>&1
+	$buildOutput = & go build -o $harnessBin $harnessSrc 2>&1
 	if ($LASTEXITCODE -ne 0) {
 		Write-Host "Failed to build Go test harness:" -ForegroundColor Red
 		Write-Host $buildOutput -ForegroundColor DarkRed
@@ -80,6 +81,7 @@ foreach ($f in $testFiles) {
 }
 
 $stopwatch.Stop()
+try { Stop-HarnessServer } catch {}
 $report = Get-TestReport
 
 Write-Host "`n==========================================================" -ForegroundColor Magenta

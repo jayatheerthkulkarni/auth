@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	_ "time/tzdata"
 
 	auth "github.com/GCET-Open-Source-Foundation/auth"
 	"github.com/GCET-Open-Source-Foundation/auth/email"
@@ -74,6 +75,12 @@ func main() {
 }
 
 func runServer(args []string) {
+	if tz := os.Getenv("AUTH_TEST_TZ"); tz != "" {
+		if loc, err := time.LoadLocation(tz); err == nil {
+			time.Local = loc
+		}
+	}
+
 	fs := flag.NewFlagSet("server", flag.ExitOnError)
 	port := fs.Int("port", 0, "port to listen on (0 for dynamic)")
 	_ = fs.Parse(args)

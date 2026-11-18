@@ -131,6 +131,29 @@ jobs:
           C:\Redis\redis-server.exe --service-start
           Start-Sleep -Seconds 3
 
+      # ── Schema & integration validation ──────────────────────────────────
+      - name: Run Schema Tests (Linux / macOS)
+        if: runner.os != 'Windows'
+        env:
+          TEST_DB_USER: testuser
+          TEST_DB_PASS: testpass
+          TEST_DB_NAME: testauth
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 5432
+          TEST_REDIS_HOST: 127.0.0.1:6379
+        run: go test -v -race ./...
+
+      - name: Run Schema Tests (Windows)
+        if: runner.os == 'Windows'
+        env:
+          TEST_DB_USER: testuser
+          TEST_DB_PASS: testpass
+          TEST_DB_NAME: testauth
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 5432
+          TEST_REDIS_HOST: 127.0.0.1:6379
+        run: go test -v ./...
+
       # ── Modular PowerShell tests ───────────────────────────────────────────
       - name: Run Modular Tests (PowerShell 7)
         shell: pwsh
@@ -140,4 +163,5 @@ jobs:
           TEST_DB_NAME: testauth
           TEST_DB_HOST: 127.0.0.1
           TEST_DB_PORT: 5432
+          TEST_REDIS_HOST: 127.0.0.1:6379
         run: pwsh ./t/Run-Tests.ps1
